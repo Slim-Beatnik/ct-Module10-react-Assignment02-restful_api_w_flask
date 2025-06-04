@@ -30,11 +30,11 @@
 <!-- PROJECT LOGO -->
 <br />
 <div align="center">
-  <a href="https://github.com/github_username/repo_name">
+  <a href="https://github.com/Slim-Beatnik/ct-Module10-react-Assignment02-restful_api_w_flask">
     <img src="images/logo.png" alt="Logo" width="80" height="80">
   </a>
 
-<h3 align="center">project_title</h3>
+<h3 align="center">ecommerce_api</h3>
 
   <p align="center">
     The Assignment
@@ -88,7 +88,7 @@ python3 -m venv venv
 
 **Mac/Linux:** source venv/bin/activate
 
-**Windows:** venv\\Scripts\\activate
+**Windows:** venv\\Scripts\\Activate
 
 **Install dependencies:**
 
@@ -117,7 +117,7 @@ Create the following tables in SQLAlchemy:
 * **id:** Integer, primary key, auto-increment  
 * **name:** String  
 * **address:** String  
-* **email:** String (must be unique)
+* **totem64:** String (must be unique)
 
 ### **Order Table**
 
@@ -235,14 +235,14 @@ Submit a **Python script** containing:
 
 
     <br />
-    <a href="https://github.com/github_username/repo_name"><strong>Explore the docs »</strong></a>
+    <a href="https://github.com/Slim-Beatnik/ct-Module10-react-Assignment02-restful_api_w_flask"><strong>Explore the docs »</strong></a>
     <br />
     <br />
-    <a href="https://github.com/github_username/repo_name">View Demo</a>
+    <a href="https://github.com/Slim-Beatnik/ct-Module10-react-Assignment02-restful_api_w_flask">View Demo</a>
     &middot;
-    <a href="https://github.com/github_username/repo_name/issues/new?labels=bug&template=bug-report---.md">Report Bug</a>
+    <a href="https://github.com/Slim-Beatnik/ct-Module10-react-Assignment02-restful_api_w_flask/issues/new?labels=bug&template=bug-report---.md">Report Bug</a>
     &middot;
-    <a href="https://github.com/github_username/repo_name/issues/new?labels=enhancement&template=feature-request---.md">Request Feature</a>
+    <a href="https://github.com/Slim-Beatnik/ct-Module10-react-Assignment02-restful_api_w_flask/issues/new?labels=enhancement&template=feature-request---.md">Request Feature</a>
   </p>
 </div>
 
@@ -281,7 +281,7 @@ Submit a **Python script** containing:
 
 [![Product Name Screen Shot][product-screenshot]](https://example.com)
 
-Here's a blank template to get started. To avoid retyping too much info, do a search and replace with your text editor for the following: `github_username`, `repo_name`, `twitter_handle`, `linkedin_username`, `email_client`, `email`, `project_title`, `project_description`, `project_license`
+Here's a blank template to get started. To avoid retyping too much info, do a search and replace with your text editor for the following: `Slim-Beatnik`, `ct-Module10-react-Assignment02-restful_api_w_flask`, `twitter_handle`, `3dkylehill`, `gmail.com`, `totem64`, `ecommerce_api`, `project_description`, `project_license`
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
 
@@ -289,14 +289,7 @@ Here's a blank template to get started. To avoid retyping too much info, do a se
 
 ### Built With
 
-* [![Next][Next.js]][Next-url]
-* [![React][React.js]][React-url]
-* [![Vue][Vue.js]][Vue-url]
-* [![Angular][Angular.io]][Angular-url]
-* [![Svelte][Svelte.dev]][Svelte-url]
-* [![Laravel][Laravel.com]][Laravel-url]
-* [![Bootstrap][Bootstrap.com]][Bootstrap-url]
-* [![JQuery][JQuery.com]][JQuery-url]
+vs code and Postman
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
 
@@ -321,21 +314,28 @@ This is an example of how to list things you need to use the software and how to
 1. Get a free API Key at [https://example.com](https://example.com)
 2. Clone the repo
    ```sh
-   git clone https://github.com/github_username/repo_name.git
+   git clone https://github.com/Slim-Beatnik/ct-Module10-react-Assignment02-restful_api_w_flask.git
    ```
-3. Install NPM packages
+3. Windows:
+      python -m venv venv
+      venv\Scripts\activate
+   MacOS/Linux:
+      python3 -m venv venv
+      source venv/bin/activate
+4. Install NPM packages
    ```sh
-   npm install
-   ```
-4. Enter your API in `config.js`
-   ```js
-   const API_KEY = 'ENTER YOUR API';
+   npm install -r requirements.txt
    ```
 5. Change git remote url to avoid accidental pushes to base project
    ```sh
-   git remote set-url origin github_username/repo_name
+   git remote set-url origin Slim-Beatnik/ct-Module10-react-Assignment02-restful_api_w_flask
    git remote -v # confirm the changes
    ```
+6. Install / run MySQL Workbench and server
+7. Install / run Postman
+8. With Postman, import kh-ct-Module10_Assignment02_ecommerce_api.postman_collection.json to test endpoints
+      The CRUD methods that are supposed to fail end with '- (html response code)', e.g. 409, 400
+
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
 
@@ -352,15 +352,15 @@ _For more examples, please refer to the [Documentation](https://example.com)_
 
 
 
-<!-- ROADMAP -->
-## Roadmap
+Take aways:
 
-- [ ] Feature 1
-- [ ] Feature 2
-- [ ] Feature 3
-    - [ ] Nested Feature
+This was relatively straight forward and mechanical, so I added a couple things
+  ***1.** I added shipped and delivered dates to the orders just to play around to get used to the underlying logics.
+  ***2.** I also added a GET method to the orders/(id)/add_product/(id) - which is also used with a PUT method to update which order has which product, but the get pulls all orders, filters out which orders have the product id in them and returns a list of the other products that are ordered along with the product added to the cart.
 
-See the [open issues](https://github.com/github_username/repo_name/issues) for a full list of proposed features (and known issues).
+Using all of these different systems simultaneously was fun.
+
+See the [open issues](https://github.com/Slim-Beatnik/ct-Module10-react-Assignment02-restful_api_w_flask/issues) for a full list of proposed features (and known issues).
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
 
@@ -384,8 +384,8 @@ Don't forget to give the project a star! Thanks again!
 
 ### Top contributors:
 
-<a href="https://github.com/github_username/repo_name/graphs/contributors">
-  <img src="https://contrib.rocks/image?repo=github_username/repo_name" alt="contrib.rocks image" />
+<a href="https://github.com/Slim-Beatnik/ct-Module10-react-Assignment02-restful_api_w_flask/graphs/contributors">
+  <img src="https://contrib.rocks/image?repo=Slim-Beatnik/ct-Module10-react-Assignment02-restful_api_w_flask" alt="contrib.rocks image" />
 </a>
 
 
@@ -402,9 +402,9 @@ Distributed under the project_license. See `LICENSE.txt` for more information.
 <!-- CONTACT -->
 ## Contact
 
-Your Name - [@twitter_handle](https://twitter.com/twitter_handle) - email@email_client.com
 
-Project Link: [https://github.com/github_username/repo_name](https://github.com/github_username/repo_name)
+
+Project Link: [https://github.com/Slim-Beatnik/ct-Module10-react-Assignment02-restful_api_w_flask](https://github.com/Slim-Beatnik/ct-Module10-react-Assignment02-restful_api_w_flask)
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
 
@@ -423,18 +423,18 @@ Project Link: [https://github.com/github_username/repo_name](https://github.com/
 
 <!-- MARKDOWN LINKS & IMAGES -->
 <!-- https://www.markdownguide.org/basic-syntax/#reference-style-links -->
-[contributors-shield]: https://img.shields.io/github/contributors/github_username/repo_name.svg?style=for-the-badge
-[contributors-url]: https://github.com/github_username/repo_name/graphs/contributors
-[forks-shield]: https://img.shields.io/github/forks/github_username/repo_name.svg?style=for-the-badge
-[forks-url]: https://github.com/github_username/repo_name/network/members
-[stars-shield]: https://img.shields.io/github/stars/github_username/repo_name.svg?style=for-the-badge
-[stars-url]: https://github.com/github_username/repo_name/stargazers
-[issues-shield]: https://img.shields.io/github/issues/github_username/repo_name.svg?style=for-the-badge
-[issues-url]: https://github.com/github_username/repo_name/issues
-[license-shield]: https://img.shields.io/github/license/github_username/repo_name.svg?style=for-the-badge
-[license-url]: https://github.com/github_username/repo_name/blob/master/LICENSE.txt
+[contributors-shield]: https://img.shields.io/github/contributors/Slim-Beatnik/ct-Module10-react-Assignment02-restful_api_w_flask.svg?style=for-the-badge
+[contributors-url]: https://github.com/Slim-Beatnik/ct-Module10-react-Assignment02-restful_api_w_flask/graphs/contributors
+[forks-shield]: https://img.shields.io/github/forks/Slim-Beatnik/ct-Module10-react-Assignment02-restful_api_w_flask.svg?style=for-the-badge
+[forks-url]: https://github.com/Slim-Beatnik/ct-Module10-react-Assignment02-restful_api_w_flask/network/members
+[stars-shield]: https://img.shields.io/github/stars/Slim-Beatnik/ct-Module10-react-Assignment02-restful_api_w_flask.svg?style=for-the-badge
+[stars-url]: https://github.com/Slim-Beatnik/ct-Module10-react-Assignment02-restful_api_w_flask/stargazers
+[issues-shield]: https://img.shields.io/github/issues/Slim-Beatnik/ct-Module10-react-Assignment02-restful_api_w_flask.svg?style=for-the-badge
+[issues-url]: https://github.com/Slim-Beatnik/ct-Module10-react-Assignment02-restful_api_w_flask/issues
+[license-shield]: https://img.shields.io/github/license/Slim-Beatnik/ct-Module10-react-Assignment02-restful_api_w_flask.svg?style=for-the-badge
+[license-url]: https://github.com/Slim-Beatnik/ct-Module10-react-Assignment02-restful_api_w_flask/blob/master/LICENSE.txt
 [linkedin-shield]: https://img.shields.io/badge/-LinkedIn-black.svg?style=for-the-badge&logo=linkedin&colorB=555
-[linkedin-url]: https://linkedin.com/in/linkedin_username
+[linkedin-url]: https://linkedin.com/in/3dkylehill
 [product-screenshot]: images/screenshot.png
 [Next.js]: https://img.shields.io/badge/next.js-000000?style=for-the-badge&logo=nextdotjs&logoColor=white
 [Next-url]: https://nextjs.org/

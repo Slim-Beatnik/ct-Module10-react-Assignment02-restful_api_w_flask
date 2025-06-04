@@ -29,7 +29,7 @@ class Customer(Base):
     
     id: Mapped[int] = mapped_column(primary_key=True) # pk
     name: Mapped[str] = mapped_column(db.String(225), nullable=False)
-    email: Mapped[str] = mapped_column(db.String(225))
+    email: Mapped[str] = mapped_column(db.String(225), unique=True)
     # password: Mapped[str] = 
     address: Mapped[str] = mapped_column(db.String(225))
     orders: Mapped[List["Orders"]] = db.relationship(back_populates='customer') #back_populates ensures that both ends of the relationship have access to the other
@@ -55,6 +55,7 @@ class Orders(Base):
     #we specify that this relationship goes through a secondary table (order_products)
     products: Mapped[List['Products']] = db.relationship(secondary=order_products, back_populates="orders")
     
+    # these should be in a different table with primary key using foreignKey order_id
     shipped_date: Mapped[date] = mapped_column(db.Date, nullable=True)
     delivered_date: Mapped[date] = mapped_column(db.Date, nullable=True)
     
@@ -106,7 +107,7 @@ def home():
 
 # Create a customer with a POST request
 @app.route("/customers", methods=["POST"])
-def add_customer():
+def add_customer():    
     try:
         customer_data = customer_schema.load(request.json)
     except ValidationError as e:
@@ -114,7 +115,14 @@ def add_customer():
     
     new_customer = Customer(name=customer_data['name'], email=customer_data['email'], address=customer_data['address'])
     db.session.add(new_customer)
-    db.session.commit()
+    
+    # handle attempts to add customers with duplicate emails
+    try:
+        db.session.commit()
+    # email has unique=True flag, duplicate entries will throw IntegrityError
+    except IntegrityError:
+        db.session.rollback()
+        return jsonify({"error": "A customer with this email already exists."}), 409
     
     return jsonify({"Message": "New Customer created successfully!",
                     "customer": customer_schema.dump(new_customer)}), 201
@@ -196,14 +204,42 @@ def get_products():
 
 @app.route("/products/<int:id>", methods=['GET'])
 def get_product(id):
-    query = select(Product).where(Product.id == id)
+    query = select(Products).where(Products.id == id)
     result = db.session.execute(query).scalars().first() # first() grabs the first object returned
     
     if result is None:
         return jsonify({"Error": "Product not found"}), 404
     
-    return customer_schema.jsonify(result), 200
+    return product_schema.jsonify(result), 200
+
+@app.route("/products/<int:id>", methods=['PUT'])
+def update_product(id):
+    product = db.session.get(Products, id)
+
+    if not product:
+        return jsonify({"message": "Invalid product id"}), 400
     
+    try:
+        product_data = product_schema.load(request.json)
+    except ValidationError as e:
+        return jsonify(e.messages), 400
+    
+    product.product_name = product_data['product_name']
+    product.price = product_data['price']
+
+    db.session.commit()
+    return product_schema.jsonify(product), 200
+
+@app.route("/products/<int:id>", methods=['DELETE'])
+def delete_products(id):
+    product = db.session.get(Products, id)
+
+    if not product:
+        return jsonify({"message": "Invalid product id"}), 400
+    
+    db.session.delete(product)
+    db.session.commit()
+    return jsonify({"message": f"succefully deleted product {id}"}), 200
 
 #=============== API ROUTES: Order Operations ==================
 #CREATE an ORDER
@@ -235,6 +271,12 @@ def add_product(order_id, product_id):
     order = db.session.get(Orders, order_id) #can use .get when querying using Primary Key
     product = db.session.get(Products, product_id)
     
+    if order.delivered_date:
+        return jsonify({"Message": f"This order was already been shipped on {order.delivered_date}, cannot add items."}), 400
+    
+    if order.shipped_date:
+        return jsonify({"Message": f"This order was already been shipped on {order.shipped_date}, cannot add items."}), 400
+    
     if order and product: #check to see if both exist
         if product not in order.products: #Ensure the product is not already on the order
             order.products.append(product) #create relationship from order to product
@@ -244,34 +286,120 @@ def add_product(order_id, product_id):
             return jsonify({"Message": "Item is already included in this order."}), 400
     else:#order or product does not exist
         return jsonify({"Message": "Invalid order id or product id."}), 400
-    
+
+
+# also_ordered at add_products to show relevent data after adding item to order
 @app.route('/orders/<int:order_id>/add_product/<int:product_id>', methods=['GET'])
-def also_ordered(order_id, product_id):
-    order = db.session.get(Orders, order_id) #can use .get when querying using Primary Key
+def get_also_ordered(order_id, product_id):
+    order = db.session.get(Orders, order_id) 
     product = db.session.get(Products, product_id)
+    # set for only unique products
+    other_products = set()
     
     if order and product:
-        other_products = set()
         other_orders = db.session.query(Orders).filter(Orders.id != order_id).all()
         for order in other_orders:
             if product in order.products:
+                # update takes list as argument
                 other_products.update(order.products)
+    else:
+        return jsonify({"Message": "Invalid order id or product id."}), 400
                 
+    if not len(other_products):
+        return jsonify({"Message": "This product is not in any other orders.",
+                        "products": [],
+                        "routes": []}), 200
+    
+    # example --  #1: jacket
     def display_other_products(other_products):
-        return "\n".join([f'{product.id}: {product.product_name}' for product in other_products])
+        return " ".join([f'#{product.id}: {product.product_name}' for product in other_products])
     
-    return jsonify({"Message": 
-        f"\n Other customers have purchased this items along with:\n {display_other_products(other_products)}"}), 200
+    # example ['/products/1', '/products/2']
+    def other_products_routes(other_products):
+        product_routes = []
+        for product in other_products:
+            product_routes.append(f"/products/{product.id}")
+        return product_routes
+    
+    return jsonify({
+        "Message": f"Other customers have purchased this items along with:\n {display_other_products(other_products)}",
+        "products": [product.id for product in other_products],
+        "routes": other_products_routes(other_products)
+        }), 200
 
+@app.route('/orders/customer/<int:id>', methods=['GET'])
+def get_customer_orders(id):
+    customer_query = select(Customer).where(Customer.id == id)
+    customer_result = db.session.execute(customer_query).scalars().first() # first() grabs the first object returned
     
+    if customer_result is None:
+        return jsonify({"Error": "Customer not found"}), 404
     
-@app.route('/orders/<int:order_id>/remove_product/<int:product_id>)', methods=['DELETE'])
-def delete_order(order_id, product_id):
+    orders_query = select(Orders).where(Orders.customer_id == id)
+    orders_result = db.session.execute(orders_query).scalars().all()
+    
+    if not len(orders_result):
+        return jsonify({"Message": "Customer has no orders."}), 404
+    
+    return orders_schema.jsonify(orders_result), 200
+
+@app.route('/orders/<int:id>/shipped', methods=['PUT'])
+def update_order_shipped(id):
+    order = db.session.get(Orders, id) #can use .get when querying using Primary Key
+    products = order.products
+    
+    # verify all products exist - send error to warehouse worker
+    if not all([bool(db.session.get(Products, product.id)) for product in products]):
+        return jsonify({"Message": "A product in this order was not found",
+                        # 304 theoretically redirect to error ticket system, or process error report system
+                        "Error": "Please verify all information is correct. Escalate to your management team."}), 304
+    
+    if order.delivered_date:
+        return jsonify({"Message": f"This order was already been delivered on {order.delivered_date}, cannot alter shipped information items.",
+                        # 304 theoretically redirect to error ticket system, or process error report system
+                        "Error": "Please verify all information is correct. Escalate to your management team.",
+                        "ErrorData": order_schema.dump(order)}), 409
+    
+    if order.shipped_date:
+        return jsonify({"Message": f"This order was already been shipped on {order.shipped_date}, cannot alter shipped information items."}), 304
+    
+    if order: #check to see if both exist
+        order.shipped_date = date.today()
+        db.session.commit()
+        return jsonify({"Message": f"Order shipped on {order.shipped_date}."}), 200
+    else:
+        return jsonify({"Message": "Order or Product not found"}), 404
+    
+@app.route('/orders/<int:id>/delivered', methods=['PUT'])
+def update_order_delivered(id):
+    order = db.session.get(Orders, id) #can use .get when querying using Primary Key
+    
+    if order:
+        if order.delivered_date:
+            return jsonify({"Message": f"This order was already been delivered on {order.delivered_date}, cannot alter delivered information items."}), 409
+        if not order.shipped_date:
+            return jsonify({"Error": f"This order was not shipped cannot alter delivered information items."}), 409
+        
+        order.delivered_date = date.today()
+        db.session.commit()
+        return jsonify({"Message": f"Order delivered on {order.delivered_date}."}), 200
+    else:#order or product does not exist
+        return jsonify({"Message": "Order not found"}), 404
+
+# should this be PUT method?
+@app.route('/orders/<int:order_id>/remove_product/<int:product_id>', methods=['DELETE']) 
+def delete_product_from_order(order_id, product_id):
     order = db.session.get(Orders, order_id)
     product = db.session.get(Products, product_id)
     
+    if order.delivered_date:
+        return jsonify({"Message": f"This order was already been delivered on {order.delivered_date}, cannot remove items."}), 400
+    
+    if order.shipped_date:
+        return jsonify({"Message": f"This order was already been shipped on {order.shipped_date}, cannot remove items."}), 400
+    
     if order and product:
-        if product in order:
+        if product in order.products:
             order.products.remove(product)
             db.session.commit()
         return jsonify({"Message": f"{product.product_name} has been successfully removed from order {order.id}, ordered at {order.order_date}."}), 200
